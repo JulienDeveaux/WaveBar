@@ -30,12 +30,12 @@ Captures system audio via CoreAudio Process Taps and displays animated frequency
 ```bash
 chmod +x build.sh
 ./build.sh
-open WaveBar.app
 ```
 
 ## Install
 
-1. Get the .app file
+1. Get the .app file from the latest release or build it yourself, then move `WaveBar.app` to your Applications folder
+2. Start WaveBar
 2. In case of issue, run in the terminal
 ```bash
 chmod +x WaveBar.app
