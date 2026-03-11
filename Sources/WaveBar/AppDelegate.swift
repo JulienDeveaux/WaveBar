@@ -16,9 +16,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var savedWidth: Int?
     private var savedSensitivity: Float?
 
+    // UserDefaults keys
+    private enum Keys {
+        static let style = "visualizerStyle"
+        static let colorScheme = "colorScheme"
+        static let width = "width"
+        static let sensitivity = "sensitivity"
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupMenuBar()
         setupAudio()
+        restoreSettings()
         startDisplayTimer()
     }
 
@@ -121,6 +130,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.menu = menu
     }
 
+    // MARK: - Persistence
+
+    private func restoreSettings() {
+        let defaults = UserDefaults.standard
+
+        if let styleName = defaults.string(forKey: Keys.style),
+           let style = VisualizerStyle(rawValue: styleName) {
+            visualizerView.style = style
+            if let styleMenu = statusItem.menu?.item(withTitle: "Style")?.submenu {
+                for item in styleMenu.items {
+                    item.state = (item.representedObject as? VisualizerStyle) == style ? .on : .off
+                }
+            }
+        }
+
+        if let colorName = defaults.string(forKey: Keys.colorScheme),
+           let scheme = ColorScheme(rawValue: colorName) {
+            visualizerView.colorScheme = scheme
+            if let colorMenu = statusItem.menu?.item(withTitle: "Color")?.submenu {
+                for item in colorMenu.items {
+                    item.state = (item.representedObject as? ColorScheme) == scheme ? .on : .off
+                }
+            }
+        }
+
+        let width = defaults.integer(forKey: Keys.width)
+        if width > 0 {
+            applyWidth(width)
+        }
+
+        let sens = defaults.float(forKey: Keys.sensitivity)
+        if sens > 0 {
+            audioAnalyzer.sensitivity = sens
+            if let sensMenu = statusItem.menu?.item(withTitle: "Sensitivity")?.submenu {
+                for item in sensMenu.items {
+                    item.state = item.tag == Int(sens * 100) ? .on : .off
+                }
+            }
+        }
+    }
+
     // MARK: - Audio
 
     private func setupAudio() {
@@ -161,10 +211,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let menu = sender.menu {
             for item in menu.items { item.state = (item == sender) ? .on : .off }
         }
+        UserDefaults.standard.set(style.rawValue, forKey: Keys.style)
 
         let isCircle = style == .circle || style == .circleRays || style == .circleDots
         if isCircle {
             applyWidth(32)
+            UserDefaults.standard.set(32, forKey: Keys.width)
         }
     }
 
@@ -188,19 +240,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let menu = sender.menu {
             for item in menu.items { item.state = (item == sender) ? .on : .off }
         }
+        UserDefaults.standard.set(scheme.rawValue, forKey: Keys.colorScheme)
     }
 
     @objc private func setWidth(_ sender: NSMenuItem) {
         savedWidth = nil
         applyWidth(sender.tag)
+        UserDefaults.standard.set(sender.tag, forKey: Keys.width)
     }
 
     @objc private func setSensitivity(_ sender: NSMenuItem) {
         savedSensitivity = nil
-        audioAnalyzer.sensitivity = Float(sender.tag) / 100.0
+        let sens = Float(sender.tag) / 100.0
+        audioAnalyzer.sensitivity = sens
         if let menu = sender.menu {
             for item in menu.items { item.state = (item == sender) ? .on : .off }
         }
+        UserDefaults.standard.set(sens, forKey: Keys.sensitivity)
     }
 
     @objc private func toggleLoginItem(_ sender: NSMenuItem) {
