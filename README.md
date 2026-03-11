@@ -6,6 +6,15 @@
 
 <p align="center">Real-time audio visualizer for the macOS menu bar.</p>
 
+<p align="center">
+  <img src="Resources/demo-1.gif" width="300" alt="WaveBar bars">
+  <img src="Resources/demo-2.gif" width="300" alt="WaveBar styles">
+</p>
+<p align="center">
+  <img src="Resources/demo-3.gif" width="300" alt="WaveBar circle">
+  <img src="Resources/demo-4.gif" width="300" alt="WaveBar colors">
+</p>
+
 Captures system audio via CoreAudio Process Taps and displays animated frequency bands directly in your menu bar.
 
 ## Features
