@@ -79,22 +79,17 @@ final class AudioAnalyzer {
         let rawBands = groupIntoBands(magnitudes: magnitudes)
 
         // Per-band auto-normalization + smoothing
+        let gain = sensitivity
         for i in 0..<bandCount {
-            // Track peaks with slow decay
             peakBands[i] *= peakDecay
             if rawBands[i] > peakBands[i] {
                 peakBands[i] = rawBands[i]
             }
-            // Ensure minimum peak to avoid division issues
             let peak = max(peakBands[i], 0.0001)
 
-            // Normalize each band relative to its own peak, apply sensitivity
-            let normalized = min(1.0, (rawBands[i] * sensitivity) / peak)
-
-            // Apply slight curve for more dynamic range in the visual
+            let normalized = min(1.0, (rawBands[i] * gain) / peak)
             let curved = pow(normalized, 0.7)
 
-            // Smooth
             if curved > smoothedBands[i] {
                 smoothedBands[i] += (curved - smoothedBands[i]) * attackFactor
             } else {

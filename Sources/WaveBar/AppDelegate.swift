@@ -10,6 +10,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var displayTimer: Timer?
     private var statusMenuItem: NSMenuItem!
 
+    // For hover preview: save current values to restore on menu close
+    private var savedStyle: VisualizerStyle?
+    private var savedColorScheme: ColorScheme?
+    private var savedWidth: Int?
+    private var savedSensitivity: Float?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupMenuBar()
         setupAudio()
@@ -36,6 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let menu = NSMenu()
+        menu.delegate = self
 
         statusMenuItem = NSMenuItem(title: "WaveBar — Starting...", action: nil, keyEquivalent: "")
         statusMenuItem.isEnabled = false
@@ -44,6 +51,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Style
         let styleMenu = NSMenu()
+        styleMenu.delegate = self
         for style in VisualizerStyle.allCases {
             let item = NSMenuItem(title: style.rawValue, action: #selector(setStyle(_:)), keyEquivalent: "")
             item.target = self
@@ -57,6 +65,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Color
         let colorMenu = NSMenu()
+        colorMenu.delegate = self
         for scheme in ColorScheme.allCases {
             let item = NSMenuItem(title: scheme.rawValue, action: #selector(setColor(_:)), keyEquivalent: "")
             item.target = self
@@ -70,6 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Width
         let widthMenu = NSMenu()
+        widthMenu.delegate = self
         for (title, width) in [("Extra Narrow", 32), ("Narrow", 48), ("Medium", 72), ("Wide", 100), ("Extra Wide", 140)] {
             let item = NSMenuItem(title: title, action: #selector(setWidth(_:)), keyEquivalent: "")
             item.target = self
@@ -83,6 +93,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Sensitivity
         let sensitivityMenu = NSMenu()
+        sensitivityMenu.delegate = self
         for (title, value) in [("Low", 0.5), ("Medium", 1.0), ("High", 2.0), ("Max", 4.0)] as [(String, Float)] {
             let item = NSMenuItem(title: title, action: #selector(setSensitivity(_:)), keyEquivalent: "")
             item.target = self
@@ -130,7 +141,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self.updateVisualization()
             }
         }
-        // .common includes eventTracking mode, so animation continues while menu is open
         RunLoop.main.add(timer, forMode: .common)
         displayTimer = timer
     }
@@ -146,14 +156,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func setStyle(_ sender: NSMenuItem) {
         guard let style = sender.representedObject as? VisualizerStyle else { return }
+        savedStyle = nil  // commit the preview
         visualizerView.style = style
         if let menu = sender.menu {
             for item in menu.items { item.state = (item == sender) ? .on : .off }
+        }
+
+        let isCircle = style == .circle || style == .circleRays || style == .circleDots
+        if isCircle {
+            applyWidth(32)
+        }
+    }
+
+    private func applyWidth(_ width: Int) {
+        statusItem.length = CGFloat(width)
+        if let button = statusItem.button {
+            visualizerView.frame = button.bounds
+        }
+        visualizerView.needsDisplay = true
+        if let widthMenu = statusItem.menu?.item(withTitle: "Width")?.submenu {
+            for item in widthMenu.items {
+                item.state = item.tag == width ? .on : .off
+            }
         }
     }
 
     @objc private func setColor(_ sender: NSMenuItem) {
         guard let scheme = sender.representedObject as? ColorScheme else { return }
+        savedColorScheme = nil
         visualizerView.colorScheme = scheme
         if let menu = sender.menu {
             for item in menu.items { item.state = (item == sender) ? .on : .off }
@@ -161,20 +191,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func setWidth(_ sender: NSMenuItem) {
-        let width = CGFloat(sender.tag)
-        statusItem.length = width
-        if let button = statusItem.button {
-            visualizerView.frame = button.bounds
-        }
-        visualizerView.needsDisplay = true
-        if let menu = sender.menu {
-            for item in menu.items { item.state = (item == sender) ? .on : .off }
-        }
+        savedWidth = nil
+        applyWidth(sender.tag)
     }
 
     @objc private func setSensitivity(_ sender: NSMenuItem) {
-        let value = Float(sender.tag) / 100.0
-        audioAnalyzer.sensitivity = value
+        savedSensitivity = nil
+        audioAnalyzer.sensitivity = Float(sender.tag) / 100.0
         if let menu = sender.menu {
             for item in menu.items { item.state = (item == sender) ? .on : .off }
         }
@@ -197,5 +220,89 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func quitApp() {
         audioCaptureManager.stopCapture()
         NSApp.terminate(nil)
+    }
+}
+
+// MARK: - NSMenuDelegate (hover preview)
+
+extension AppDelegate: @preconcurrency NSMenuDelegate {
+    func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
+        handleHighlight(menu: menu, item: item)
+    }
+
+    private func handleHighlight(menu: NSMenu, item: NSMenuItem?) {
+        // Style preview
+        if menu.items.first?.representedObject is VisualizerStyle {
+            if let style = item?.representedObject as? VisualizerStyle {
+                if savedStyle == nil { savedStyle = visualizerView.style }
+                visualizerView.style = style
+                let isCircle = style == .circle || style == .circleRays || style == .circleDots
+                if isCircle {
+                    if savedWidth == nil { savedWidth = Int(statusItem.length) }
+                    statusItem.length = 32
+                    if let button = statusItem.button { visualizerView.frame = button.bounds }
+                } else if let sw = savedWidth {
+                    statusItem.length = CGFloat(sw)
+                    if let button = statusItem.button { visualizerView.frame = button.bounds }
+                    savedWidth = nil
+                }
+            }
+            return
+        }
+
+        // Color preview
+        if menu.items.first?.representedObject is ColorScheme {
+            if let scheme = item?.representedObject as? ColorScheme {
+                if savedColorScheme == nil { savedColorScheme = visualizerView.colorScheme }
+                visualizerView.colorScheme = scheme
+            }
+            return
+        }
+
+        // Width preview
+        if menu.items.contains(where: { $0.action == #selector(setWidth(_:)) }) {
+            if let w = item, w.action == #selector(setWidth(_:)) {
+                if savedWidth == nil { savedWidth = Int(statusItem.length) }
+                statusItem.length = CGFloat(w.tag)
+                if let button = statusItem.button { visualizerView.frame = button.bounds }
+                visualizerView.needsDisplay = true
+            }
+            return
+        }
+
+        // Sensitivity preview
+        if menu.items.contains(where: { $0.action == #selector(setSensitivity(_:)) }) {
+            if let s = item, s.action == #selector(setSensitivity(_:)) {
+                if savedSensitivity == nil { savedSensitivity = audioAnalyzer.sensitivity }
+                audioAnalyzer.sensitivity = Float(s.tag) / 100.0
+            }
+            return
+        }
+    }
+
+    func menuDidClose(_ menu: NSMenu) {
+        restoreAfterPreview()
+    }
+
+    private func restoreAfterPreview() {
+        // Restore any previewed-but-not-committed values
+        if let style = savedStyle {
+            visualizerView.style = style
+            savedStyle = nil
+        }
+        if let scheme = savedColorScheme {
+            visualizerView.colorScheme = scheme
+            savedColorScheme = nil
+        }
+        if let width = savedWidth {
+            statusItem.length = CGFloat(width)
+            if let button = statusItem.button { visualizerView.frame = button.bounds }
+            visualizerView.needsDisplay = true
+            savedWidth = nil
+        }
+        if let sens = savedSensitivity {
+            audioAnalyzer.sensitivity = sens
+            savedSensitivity = nil
+        }
     }
 }
