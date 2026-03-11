@@ -241,14 +241,7 @@ final class VisualizerView: NSView {
                 let rect = CGRect(x: x, y: y, width: layout.width, height: blockH)
 
                 if b < active {
-                    if colorScheme == .rainbow {
-                        let hue = CGFloat(i) / CGFloat(layout.count)
-                        NSColor(calibratedHue: hue, saturation: 0.85, brightness: isDark ? 0.9 : 0.7, alpha: 0.9).setFill()
-                    } else {
-                        let ratio = CGFloat(b) / CGFloat(maxBlocks)
-                        let hue: CGFloat = 0.33 - ratio * 0.33
-                        NSColor(calibratedHue: hue, saturation: 0.85, brightness: isDark ? 0.9 : 0.7, alpha: 0.9).setFill()
-                    }
+                    color(forIndex: i, ofCount: layout.count, value: CGFloat(b) / CGFloat(maxBlocks)).setFill()
                 } else {
                     (isDark ? NSColor.white.withAlphaComponent(0.08) : NSColor.black.withAlphaComponent(0.06)).setFill()
                 }
