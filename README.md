@@ -1,6 +1,12 @@
-# WaveBar
+<p align="center">
+  <img src="Resources/AppIcon.svg" width="128" height="128" alt="WaveBar icon">
+</p>
 
-Real-time audio visualizer for the macOS menu bar. Captures system audio via CoreAudio Process Taps and displays animated frequency bands directly in your menu bar.
+<h1 align="center">WaveBar</h1>
+
+<p align="center">Real-time audio visualizer for the macOS menu bar.</p>
+
+Captures system audio via CoreAudio Process Taps and displays animated frequency bands directly in your menu bar.
 
 ## Features
 

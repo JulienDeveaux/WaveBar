@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#0d0d1a"/>
+    </linearGradient>
+    <linearGradient id="bars" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#00b8d4"/>
+      <stop offset="50%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#80f0ff"/>
+    </linearGradient>
+    <filter id="bloom-far" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="28"/>
+    </filter>
+    <filter id="bloom-mid" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="ambient" cx="50%" cy="55%" r="50%">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.12"/>
+      <stop offset="60%" stop-color="#00b8d4" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" fill="url(#bg)"/>
+  <rect x="0" y="0" width="512" height="512" fill="url(#ambient)"/>
+  <g filter="url(#bloom-far)" fill="#00e5ff" opacity="0.35">
+    <rect x="72" y="296" width="32" height="80" rx="8"/>
+    <rect x="120" y="236" width="32" height="140" rx="8"/>
+    <rect x="168" y="176" width="32" height="200" rx="8"/>
+    <rect x="216" y="126" width="32" height="250" rx="8"/>
+    <rect x="264" y="96" width="32" height="280" rx="8"/>
+    <rect x="312" y="136" width="32" height="240" rx="8"/>
+    <rect x="360" y="196" width="32" height="180" rx="8"/>
+    <rect x="408" y="256" width="32" height="120" rx="8"/>
+  </g>
+  <g filter="url(#bloom-mid)" fill="#00e5ff" opacity="0.4">
+    <rect x="72" y="296" width="32" height="80" rx="8"/>
+    <rect x="120" y="236" width="32" height="140" rx="8"/>
+    <rect x="168" y="176" width="32" height="200" rx="8"/>
+    <rect x="216" y="126" width="32" height="250" rx="8"/>
+    <rect x="264" y="96" width="32" height="280" rx="8"/>
+    <rect x="312" y="136" width="32" height="240" rx="8"/>
+    <rect x="360" y="196" width="32" height="180" rx="8"/>
+    <rect x="408" y="256" width="32" height="120" rx="8"/>
+  </g>
+  <g filter="url(#glow)" fill="url(#bars)">
+    <rect x="72" y="296" width="32" height="80" rx="8"/>
+    <rect x="120" y="236" width="32" height="140" rx="8"/>
+    <rect x="168" y="176" width="32" height="200" rx="8"/>
+    <rect x="216" y="126" width="32" height="250" rx="8"/>
+    <rect x="264" y="96" width="32" height="280" rx="8"/>
+    <rect x="312" y="136" width="32" height="240" rx="8"/>
+    <rect x="360" y="196" width="32" height="180" rx="8"/>
+    <rect x="408" y="256" width="32" height="120" rx="8"/>
+  </g>
+  <g fill="url(#bars)" opacity="0.1">
+    <rect x="72" y="384" width="32" height="40" rx="8"/>
+    <rect x="120" y="384" width="32" height="70" rx="8"/>
+    <rect x="168" y="384" width="32" height="100" rx="8"/>
+    <rect x="216" y="384" width="32" height="100" rx="8"/>
+    <rect x="264" y="384" width="32" height="100" rx="8"/>
+    <rect x="312" y="384" width="32" height="100" rx="8"/>
+    <rect x="360" y="384" width="32" height="90" rx="8"/>
+    <rect x="408" y="384" width="32" height="60" rx="8"/>
+  </g>
+</svg>

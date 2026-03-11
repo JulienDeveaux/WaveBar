@@ -19,6 +19,9 @@ cp .build/release/WaveBar "$APP/Contents/MacOS/"
 # Copy Info.plist
 cp Resources/Info.plist "$APP/Contents/"
 
+# Copy app icon
+cp Resources/AppIcon.icns "$APP/Contents/Resources/"
+
 # Ad-hoc sign with entitlements
 echo "==> Signing..."
 codesign --force --sign - --entitlements Resources/Entitlements.plist "$APP"
