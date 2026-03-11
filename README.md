@@ -15,44 +15,30 @@
   <img src="Resources/demo-4.gif" width="300" alt="WaveBar colors">
 </p>
 
-Captures system audio via CoreAudio Process Taps and displays animated frequency bands directly in your menu bar.
-
 ## Features
 
-- **9 visualization styles**: Bars, Bars (Inverted), Mirror Bars, Wave, Blocks, Line, Circle Blob, Circle Rays, Circle Dots
-- **7 color schemes**: Cyan, Purple, Green, Orange, Pink, Rainbow, White
-- **Adjustable width**: Extra Narrow / Narrow / Medium / Wide / Extra Wide
-- **System audio capture** via CoreAudio Process Taps — no screen recording icon in the menu bar
+- **9 visualization styles** — Bars, Bars (Inverted), Mirror Bars, Wave, Blocks, Line, Circle Blob, Circle Rays, Circle Dots
+- **7 color schemes** — Cyan, Purple, Green, Orange, Pink, Rainbow, White
+- **Adjustable width** — Extra Narrow / Narrow / Medium / Wide / Extra Wide
+- **Sensitivity control** — Low / Medium / High / Max
 - **Start at Login** option
-- **Dark/light mode** support
 - **Menu bar only** — no Dock icon, minimal footprint
-- **Animation continues** while the settings menu is open
-
-## Requirements
-
-- macOS 15+
-- Swift 6.0+
-- Command Line Tools or Xcode
-
-## Build from source
-
-```bash
-chmod +x build.sh
-./build.sh
-```
 
 ## Install
 
-1. Get the .app file from the latest release or build it yourself, then move `WaveBar.app` to your Applications folder
-2. Start WaveBar
-2. In case of issue, run in the terminal
-```bash
-chmod +x WaveBar.app
-```
+1. Download `WaveBar.dmg` from the [latest release](https://github.com/JulienDeveaux/WaveBar/releases/latest)
+2. Open the DMG and drag `WaveBar.app` to your Applications folder
+3. Launch WaveBar
 
-### Grant audio permission
+> **Troubleshooting:** If macOS blocks the app, open Terminal and run:
+> ```bash
+> xattr -d com.apple.quarantine /Applications/WaveBar.app
+> ```
+> This is needed because the app is not notarized with an Apple Developer account.
 
-On first launch, WaveBar will ask you to grant **System Audio Recording** permission:
+### Audio permission
+
+On first launch, WaveBar will guide you through granting **System Audio Recording** permission:
 
 1. Go to **System Settings → Privacy & Security**
 2. Scroll down to **System Audio Recording** (not Screen Recording!)
@@ -60,17 +46,29 @@ On first launch, WaveBar will ask you to grant **System Audio Recording** permis
 4. Find and select `WaveBar.app`, then click Open
 5. Make sure the toggle next to WaveBar is **ON**
 
-You can also open this settings page anytime from the WaveBar menu → **Check Audio Permissions...**
+You can reopen this page anytime from the WaveBar menu → **Check Audio Permissions...**
+
+## Build from source
+
+Requires macOS 15+ and Swift 6.0+ (Command Line Tools or Xcode).
+
+```bash
+git clone https://github.com/JulienDeveaux/WaveBar.git
+cd WaveBar
+chmod +x build.sh
+./build.sh
+open WaveBar.app
+```
 
 ## Architecture
 
 | File | Role |
 |---|---|
 | `main.swift` | App entry point, NSApplication setup, Launch Services registration |
-| `AppDelegate.swift` | Menu bar UI, settings menus, display timer, login item |
-| `AudioCaptureManager.swift` | CoreAudio Process Tap + aggregate device, permission flow |
-| `AudioAnalyzer.swift` | FFT via Accelerate/vDSP, logarithmic band grouping, auto gain |
-| `VisualizerView.swift` | Custom NSView rendering all 9 visualization styles |
+| `AppDelegate.swift` | Menu bar UI, settings menus with live preview, display timer |
+| `AudioCaptureManager.swift` | CoreAudio Process Tap + aggregate device setup |
+| `AudioAnalyzer.swift` | FFT via Accelerate/vDSP, logarithmic band grouping, auto-normalization |
+| `VisualizerView.swift` | Layer-backed NSView rendering all 9 visualization styles |
 
 ## License
 

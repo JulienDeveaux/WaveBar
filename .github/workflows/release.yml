@@ -29,11 +29,15 @@ jobs:
           cp Resources/AppIcon.icns "$APP/Contents/Resources/"
           codesign --force --sign - --entitlements Resources/Entitlements.plist "$APP"
 
-      - name: Zip app
-        run: ditto -c -k --sequesterRsrc --keepParent WaveBar.app WaveBar.zip
+      - name: Create DMG
+        run: |
+          mkdir -p dmg_contents
+          cp -R WaveBar.app dmg_contents/
+          ln -s /Applications dmg_contents/Applications
+          hdiutil create -volname "WaveBar" -srcfolder dmg_contents -ov -format UDZO WaveBar.dmg
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: WaveBar.zip
+          files: WaveBar.dmg
           generate_release_notes: true

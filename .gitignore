@@ -1,4 +1,9 @@
 .DS_Store
 .build/
 WaveBar.app/
+WaveBar.dmg
+dmg_contents/
 .idea/
+.swiftpm/
+*.xcodeproj
+xcuserdata/
