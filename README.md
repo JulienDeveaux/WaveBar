@@ -25,7 +25,7 @@ Captures system audio via CoreAudio Process Taps and displays animated frequency
 - Swift 6.0+
 - Command Line Tools or Xcode
 
-## Build & Run
+## Build from source
 
 ```bash
 chmod +x build.sh
@@ -33,11 +33,25 @@ chmod +x build.sh
 open WaveBar.app
 ```
 
-## Permissions
+## Install
 
-On first launch, WaveBar will prompt you to grant **System Audio Recording** permission. If no audio is detected after a few seconds, it will offer to open **System Settings → Privacy & Security → Audio Capture** where you can add WaveBar.
+1. Get the .app file
+2. In case of issue, run in the terminal
+```bash
+chmod +x WaveBar.app
+```
 
-The app automatically retries capture after permission is granted — no need to relaunch manually.
+### Grant audio permission
+
+On first launch, WaveBar will ask you to grant **System Audio Recording** permission:
+
+1. Go to **System Settings → Privacy & Security**
+2. Scroll down to **System Audio Recording** (not Screen Recording!)
+3. Click the **+** button at the bottom of the list
+4. Find and select `WaveBar.app`, then click Open
+5. Make sure the toggle next to WaveBar is **ON**
+
+You can also open this settings page anytime from the WaveBar menu → **Check Audio Permissions...**
 
 ## Architecture
 

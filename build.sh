@@ -15,6 +15,7 @@ mkdir -p "$APP/Contents/Resources"
 
 # Copy binary
 cp .build/release/WaveBar "$APP/Contents/MacOS/"
+chmod +x "$APP/Contents/MacOS/WaveBar"
 
 # Copy Info.plist
 cp Resources/Info.plist "$APP/Contents/"

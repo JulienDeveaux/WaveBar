@@ -22,6 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         static let colorScheme = "colorScheme"
         static let width = "width"
         static let sensitivity = "sensitivity"
+        static let hasCompletedSetup = "hasCompletedSetup"
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -29,6 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupAudio()
         restoreSettings()
         startDisplayTimer()
+        showFirstLaunchSetupIfNeeded()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -121,6 +123,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         loginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
         menu.addItem(loginItem)
 
+        let permItem = NSMenuItem(title: "Check Audio Permissions...", action: #selector(openAudioPermissions), keyEquivalent: "")
+        permItem.target = self
+        menu.addItem(permItem)
+
         menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(title: "Quit WaveBar", action: #selector(quitApp), keyEquivalent: "q")
@@ -128,6 +134,42 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(quitItem)
 
         statusItem.menu = menu
+    }
+
+    // MARK: - First Launch Setup
+
+    private func showFirstLaunchSetupIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: Keys.hasCompletedSetup) else { return }
+        UserDefaults.standard.set(true, forKey: Keys.hasCompletedSetup)
+
+        // Bring app to front (needed for LSUIElement apps)
+        NSApp.activate(ignoringOtherApps: true)
+
+        let alert = NSAlert()
+        alert.messageText = "Welcome to WaveBar!"
+        alert.informativeText = """
+            WaveBar visualizes your system audio in the menu bar.
+
+            To work, it needs access to System Audio Recording:
+
+            1. Click "Open Settings" below
+            2. In Privacy & Security, find "System Audio Recording"
+               (⚠️ not "Screen Recording" — scroll down if needed)
+            3. Click the "+" button at the bottom of the list
+            4. Find and select WaveBar.app, then click Open
+            5. Make sure the toggle next to WaveBar is ON
+
+            Once permission is granted, play some music and \
+            WaveBar will start visualizing automatically!
+            """
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "Open Settings")
+        alert.addButton(withTitle: "I'll do it later")
+
+        let response = alert.runModal()
+        if response == .alertFirstButtonReturn {
+            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AudioCapture")!)
+        }
     }
 
     // MARK: - Persistence
@@ -271,6 +313,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } catch {
             print("WaveBar: Login item toggle failed: \(error)")
         }
+    }
+
+    @objc private func openAudioPermissions() {
+        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AudioCapture")!)
     }
 
     @objc private func quitApp() {
