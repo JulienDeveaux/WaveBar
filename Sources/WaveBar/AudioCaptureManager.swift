@@ -101,17 +101,19 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
             guard frameCount > 0 else { return }
 
             let channelCount = Int(buffer.format.channelCount)
-            var mono = [Float](repeating: 0, count: frameCount)
 
             if channelCount >= 2, let ch0 = buffer.floatChannelData?[0], let ch1 = buffer.floatChannelData?[1] {
-                for i in 0..<frameCount {
-                    mono[i] = (ch0[i] + ch1[i]) * 0.5
+                // Mix stereo to mono in-place, append directly
+                let mono = [Float](unsafeUninitializedCapacity: frameCount) { buf, count in
+                    for i in 0..<frameCount {
+                        buf[i] = (ch0[i] + ch1[i]) * 0.5
+                    }
+                    count = frameCount
                 }
+                self.appendSamples(mono)
             } else if let ch0 = buffer.floatChannelData?[0] {
-                mono = Array(UnsafeBufferPointer(start: ch0, count: frameCount))
+                self.appendSamples(UnsafeBufferPointer(start: ch0, count: frameCount))
             }
-
-            self.appendSamples(mono)
         }
 
         do {
@@ -132,7 +134,16 @@ final class AudioCaptureManager: NSObject, @unchecked Sendable {
         samplesLock.lock()
         _samples.append(contentsOf: newSamples)
         if _samples.count > bufferSize {
-            _samples = Array(_samples.suffix(bufferSize))
+            _samples.removeFirst(_samples.count - bufferSize)
+        }
+        samplesLock.unlock()
+    }
+
+    private func appendSamples(_ newSamples: UnsafeBufferPointer<Float>) {
+        samplesLock.lock()
+        _samples.append(contentsOf: newSamples)
+        if _samples.count > bufferSize {
+            _samples.removeFirst(_samples.count - bufferSize)
         }
         samplesLock.unlock()
     }

@@ -227,7 +227,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Display
 
     private func startDisplayTimer() {
-        let timer = Timer(timeInterval: 1.0 / 30.0, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: 1.0 / 15.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             MainActor.assumeIsolated {
                 self.updateVisualization()
@@ -237,10 +237,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         displayTimer = timer
     }
 
+    private var lastBands: [Float] = []
+
     private func updateVisualization() {
         let samples = audioCaptureManager.currentSamples
         guard !samples.isEmpty else { return }
         let bands = audioAnalyzer.analyze(samples: samples)
+        // Skip redraw if bands haven't changed meaningfully
+        if lastBands.count == bands.count {
+            var maxDiff: Float = 0
+            for i in 0..<bands.count {
+                maxDiff = max(maxDiff, abs(bands[i] - lastBands[i]))
+            }
+            if maxDiff < 0.005 { return }
+        }
+        lastBands = bands
         visualizerView.bands = bands
     }
 

@@ -23,6 +23,18 @@ enum ColorScheme: String, CaseIterable {
 }
 
 final class VisualizerView: NSView {
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        layerContentsRedrawPolicy = .onSetNeedsDisplay
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        wantsLayer = true
+        layerContentsRedrawPolicy = .onSetNeedsDisplay
+    }
+
     var bands: [Float] = Array(repeating: 0, count: 16) {
         didSet { needsDisplay = true }
     }
