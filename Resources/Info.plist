@@ -16,7 +16,5 @@
     <string>1</string>
     <key>LSUIElement</key>
     <true/>
-    <key>NSScreenCaptureUsageDescription</key>
-    <string>WaveBar needs Screen Recording permission to capture system audio for visualization.</string>
 </dict>
 </plist>
