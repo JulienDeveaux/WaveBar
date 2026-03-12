@@ -6,7 +6,7 @@ import Foundation
 final class AudioCaptureManager: NSObject, @unchecked Sendable {
     enum Status: String {
         case idle = "Idle"
-        case capturing = "Capturing system audio"
+        case capturing = "Capturing audio"
         case error = "Error"
         case reconnecting = "Reconnecting..."
     }

@@ -55,7 +55,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         menu.delegate = self
 
-        statusMenuItem = NSMenuItem(title: "WaveBar — Starting...", action: nil, keyEquivalent: "")
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+        statusMenuItem = NSMenuItem(title: "WaveBar v\(version) — Starting...", action: nil, keyEquivalent: "")
         statusMenuItem.isEnabled = false
         menu.addItem(statusMenuItem)
         menu.addItem(NSMenuItem.separator())
@@ -218,8 +219,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupAudio() {
         audioAnalyzer = AudioAnalyzer(fftSize: 1024, bandCount: 16)
         audioCaptureManager = AudioCaptureManager()
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
         audioCaptureManager.onStatusChanged = { [weak self] status in
-            self?.statusMenuItem?.title = "WaveBar — \(status.rawValue)"
+            self?.statusMenuItem?.title = "WaveBar v\(version) — \(status.rawValue)"
         }
         audioCaptureManager.startCapture()
     }
