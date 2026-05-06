@@ -47,6 +47,10 @@ final class VisualizerView: NSView {
         didSet { needsDisplay = true }
     }
 
+    var brightness: CGFloat = 1.0 {
+        didSet { alphaValue = brightness }
+    }
+
     private let verticalPadding: CGFloat = 3.0
     private let barGap: CGFloat = 1.0
 

@@ -9,6 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var audioAnalyzer: AudioAnalyzer!
     private var displayTimer: Timer?
     private var statusMenuItem: NSMenuItem!
+    private var brightnessSlider: NSSlider?
 
     // For hover preview: save current values to restore on menu close
     private var savedStyle: VisualizerStyle?
@@ -22,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         static let colorScheme = "colorScheme"
         static let width = "width"
         static let sensitivity = "sensitivity"
+        static let brightness = "brightness"
         static let hasCompletedSetup = "hasCompletedSetup"
     }
 
@@ -117,6 +119,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         sensitivityItem.submenu = sensitivityMenu
         menu.addItem(sensitivityItem)
 
+        // Brightness (slider in submenu)
+        let brightnessMenu = NSMenu()
+        let sliderItem = NSMenuItem()
+        sliderItem.view = makeBrightnessSliderView(initial: 1.0)
+        brightnessMenu.addItem(sliderItem)
+        let brightnessItem = NSMenuItem(title: "Brightness", action: nil, keyEquivalent: "")
+        brightnessItem.submenu = brightnessMenu
+        menu.addItem(brightnessItem)
+
         menu.addItem(NSMenuItem.separator())
 
         let loginItem = NSMenuItem(title: "Start at Login", action: #selector(toggleLoginItem(_:)), keyEquivalent: "")
@@ -211,6 +222,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     item.state = item.tag == Int(sens * 100) ? .on : .off
                 }
             }
+        }
+
+        let brightness = defaults.float(forKey: Keys.brightness)
+        if brightness > 0 {
+            visualizerView.brightness = CGFloat(brightness)
+            brightnessSlider?.floatValue = brightness
         }
     }
 
@@ -312,6 +329,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             for item in menu.items { item.state = (item == sender) ? .on : .off }
         }
         UserDefaults.standard.set(sens, forKey: Keys.sensitivity)
+    }
+
+    private func makeBrightnessSliderView(initial: Float) -> NSView {
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: 200, height: 28))
+        let slider = NSSlider(value: Double(initial),
+                              minValue: 0.15, maxValue: 1.0,
+                              target: self, action: #selector(setBrightness(_:)))
+        slider.frame = NSRect(x: 14, y: 4, width: 172, height: 20)
+        slider.isContinuous = true
+        slider.autoresizingMask = [.width]
+        container.autoresizingMask = [.width]
+        container.addSubview(slider)
+        self.brightnessSlider = slider
+        return container
+    }
+
+    @objc private func setBrightness(_ sender: NSSlider) {
+        let b = sender.floatValue
+        visualizerView.brightness = CGFloat(b)
+        UserDefaults.standard.set(b, forKey: Keys.brightness)
     }
 
     @objc private func toggleLoginItem(_ sender: NSMenuItem) {
