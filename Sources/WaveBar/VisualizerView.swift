@@ -238,17 +238,17 @@ final class VisualizerView: NSView {
 
         for i in 0..<layout.count {
             let x = xOffset + CGFloat(i) * (layout.width + barGap)
-            let active = max(0, Int(values[i] * CGFloat(maxBlocks)))
+            let value = values[i]
+            let active = max(0, Int(value * CGFloat(maxBlocks)))
+            let litColor = color(forIndex: i, ofCount: layout.count, value: value)
+            let dimColor: NSColor = isDark
+                ? NSColor.white.withAlphaComponent(0.08)
+                : NSColor.black.withAlphaComponent(0.06)
 
             for b in 0..<maxBlocks {
                 let y = verticalPadding + CGFloat(b) * (blockH + blockGap)
                 let rect = CGRect(x: x, y: y, width: layout.width, height: blockH)
-
-                if b < active {
-                    color(forIndex: i, ofCount: layout.count, value: CGFloat(b) / CGFloat(maxBlocks)).setFill()
-                } else {
-                    (isDark ? NSColor.white.withAlphaComponent(0.08) : NSColor.black.withAlphaComponent(0.06)).setFill()
-                }
+                (b < active ? litColor : dimColor).setFill()
                 NSBezierPath(rect: rect).fill()
             }
         }
